@@ -6,8 +6,10 @@ import android.content.ServiceConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.widget.Button
+import java.util.logging.Handler
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +27,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    val timeHandler = android.os.Handler(Looper.getMainLooper()) {
+        findViewById<Button>(R.id.startButton).text = if (timeBinder.paused) "Resume" else "Pause"
+        true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,12 +43,18 @@ class MainActivity : AppCompatActivity() {
             BIND_AUTO_CREATE
         )
 
+        timeBinder.setHandler(timeHandler)
+
         //Create service connection object
         findViewById<Button>(R.id.startButton).setOnClickListener {
             Log.d("VIVI", isConnected.toString())
             if(isConnected) {
-                timeBinder.start(100)
-            }
+                if(!timeBinder.isRunning && !timeBinder.paused) {
+                    timeBinder.start(100)
+                } else {
+                    timeBinder.pause()
+                }                }
+
         }
         
         findViewById<Button>(R.id.stopButton).setOnClickListener {
