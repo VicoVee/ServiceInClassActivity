@@ -8,34 +8,36 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import android.os.Handler
 import android.widget.Button
-import java.util.logging.Handler
+import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var timeBinder : TimerService.TimerBinder
-    var isConnected = false
+    private lateinit var timeBinder : TimerService.TimerBinder
+    private lateinit var textView : TextView
 
-    val serviceConnection = object : ServiceConnection {
+    private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
             timeBinder = p1 as TimerService.TimerBinder
-            isConnected = true
+            timeBinder.setHandler(timeHandler)
         }
 
         override fun onServiceDisconnected(p0: ComponentName?) {
-            isConnected = false
+            //Do nothing for now
         }
     }
 
-    val timeHandler = android.os.Handler(Looper.getMainLooper()) {
-        findViewById<Button>(R.id.startButton).text = if (timeBinder.paused) "Resume" else "Pause"
+    private val timeHandler = Handler(Looper.getMainLooper(), { me ->
+        textView = findViewById(R.id.textView)
+        Log.d("VIVI", me.toString())
+//        textView.text =
         true
-    }
+    })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
 
         bindService(
             Intent(this, TimerService::class.java),
@@ -43,18 +45,13 @@ class MainActivity : AppCompatActivity() {
             BIND_AUTO_CREATE
         )
 
-        timeBinder.setHandler(timeHandler)
-
         //Create service connection object
         findViewById<Button>(R.id.startButton).setOnClickListener {
-            Log.d("VIVI", isConnected.toString())
-            if(isConnected) {
-                if(!timeBinder.isRunning && !timeBinder.paused) {
-                    timeBinder.start(100)
-                } else {
-                    timeBinder.pause()
-                }                }
-
+            if(!timeBinder.isRunning) {
+                timeBinder.start(100)
+            } else {
+                timeBinder.pause()
+            }
         }
         
         findViewById<Button>(R.id.stopButton).setOnClickListener {
