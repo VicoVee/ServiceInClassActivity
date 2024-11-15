@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private val timeHandler = Handler(Looper.getMainLooper(), { me ->
         textView = findViewById(R.id.textView)
         Log.d("VIVI", me.toString())
-//        textView.text =
+        textView.text = me.what.toString()
         true
     })
 
@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         
         findViewById<Button>(R.id.stopButton).setOnClickListener {
             timeBinder.stop()
+            textView.text = "0"
         }
     }
 
